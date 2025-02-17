@@ -1,0 +1,6 @@
+2025-02-17 15:57:05	34.2s	maniac_babbage	OK	cf377c36d5a03e30b185d92185496267	101820e0-ab42-40f0-8bd6-659b99150472	nextflow run main.nf
+2025-02-17 16:19:41	2.5s	stupefied_goldberg	ERR	9db0bfcae9e76e9277dd8d417073f31f	b74706f3-7186-4516-a8fd-cb7381995ef0	nextflow run workflows/main.nf -profile standard
+2025-02-17 16:23:46	-	nice_boltzmann	-	87e0838934dc4c8bf5b0c1fa977c6a0d	60987bd0-c9c1-406a-b43d-7df51c4194ae	nextflow run workflows/main.nf -profile standard
+2025-02-17 16:24:50	-	big_turing	-	87e0838934dc4c8bf5b0c1fa977c6a0d	182530c2-d45e-403a-8635-7681b270386e	nextflow run workflows/main.nf -with-conda
+2025-02-17 16:28:44	-	kickass_gilbert	-	aef6d719b70cead14e238ab0434d29ea	ff885725-06fd-4dff-bc79-2dc60059f21a	nextflow run workflows/main.nf -with-conda
+2025-02-17 16:34:08	-	grave_bhaskara	-	f677e84896dfb5d1afa5edc51013a453	ff885725-06fd-4dff-bc79-2dc60059f21a	nextflow run workflows/main.nf -with-conda -resume

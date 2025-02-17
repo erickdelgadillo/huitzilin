@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 import sqlite3
 import numpy as np
 import faiss
 import sys
+import os
 from sentence_transformers import SentenceTransformer
 
 # Load the SentenceTransformer model
@@ -44,8 +46,11 @@ def search_articles(query, top_k=12):
 # Main process
 def main():
     results = search_articles(user_query)
+    
+    # Crear la carpeta 'output' si no existe
+    os.makedirs('../../../results', exist_ok=True)
 
-    with open("../../../results.txt", "w") as f:
+    with open("../../../results/results.txt", "w") as f:
         f.write(f"🔍 Results for: {user_query}\n\n")
         for i, res in enumerate(results):
             f.write(f"{i+1}. 📰 {res['title']}\n")
