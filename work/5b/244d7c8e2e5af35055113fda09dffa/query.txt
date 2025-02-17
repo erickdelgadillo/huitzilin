@@ -1,1 +1,0 @@
-/home/erick/Nextflow/colibot/data/input/query.txt
