@@ -1,31 +1,28 @@
 nextflow.enable.dsl=2
 
-// Definir parámetros
 params.query_file = file("data/input/query.txt")
 
-// Proceso extract_pubmed
 process extract_pubmed {
     conda 'env/environment.yml'
 
     input:
-    tuple val(query_name), file(query_file)  // ✅ Se usa 'file' en lugar de 'path'
+    file query_file  // ✅ CORREGIDO
 
     output:
-    file "colibot.db"  // ✅ Se usa 'file' en lugar de 'path'
+    file "colibot.db"  // ✅ CORREGIDO
 
     script:
     """
     echo "📥 Extracting articles based on query..."
-    python bin/extract_pubmed.py ${query_file} -o colibot.db
+    python bin/extract_pubmed.py ${query_file} colibot.db
     """
 }
 
-// Proceso generate_faiss
 process generate_faiss {
     conda 'env/environment.yml'
 
-    input:
-    file "colibot.db"
+   input:
+   file colibot_db
 
     output:
     file "colibot_faiss.index",
@@ -38,15 +35,11 @@ process generate_faiss {
     """
 }
 
-// Proceso query_faiss
 process query_faiss {
     conda 'env/environment.yml'
 
     input:
-    file "colibot_faiss.index"
-    file "colibot_article_ids.npy"
-    file "colibot.db"
-    file query_file
+    tuple file(colibot_faiss_index), file(colibot_article_ids), file(colibot_db), file(query_file)  
 
     output:
     file "results.txt"
@@ -54,12 +47,11 @@ process query_faiss {
     script:
     """
     echo "🔍 Running FAISS query..."
-    python bin/query_faiss.py ${query_file} -i colibot_faiss.index -a colibot_article_ids.npy -d colibot.db -o results.txt
+    python bin/query_faiss.py ${query_file} -i ${colibot_faiss_index} -a ${colibot_article_ids} -d ${colibot_db} -o results.txt
     echo "✅ Query completed. Check 'results.txt'."
     """
 }
 
-// Definir el flujo de trabajo
 workflow {
     query_ch = Channel.fromPath(params.query_file)
 
