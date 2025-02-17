@@ -4,3 +4,5 @@
 2025-02-17 16:24:50	-	big_turing	-	87e0838934dc4c8bf5b0c1fa977c6a0d	182530c2-d45e-403a-8635-7681b270386e	nextflow run workflows/main.nf -with-conda
 2025-02-17 16:28:44	-	kickass_gilbert	-	aef6d719b70cead14e238ab0434d29ea	ff885725-06fd-4dff-bc79-2dc60059f21a	nextflow run workflows/main.nf -with-conda
 2025-02-17 16:34:08	-	grave_bhaskara	-	f677e84896dfb5d1afa5edc51013a453	ff885725-06fd-4dff-bc79-2dc60059f21a	nextflow run workflows/main.nf -with-conda -resume
+2025-02-17 16:44:17	-	maniac_sinoussi	-	fc06524fea7e1fbfd12f0f7352598025	02a1cb86-2224-4e73-8dd3-7852409b2147	nextflow run workflows/main.nf -with-conda
+2025-02-17 16:46:15	-	suspicious_hodgkin	-	22fbfa3fddca072be985f6924ebe9fce	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda
