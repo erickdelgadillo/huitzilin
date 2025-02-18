@@ -1,0 +1,1 @@
+/home/erick/Nextflow/colibot/scripts/generate_Faiss_embeddings.py

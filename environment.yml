@@ -1,0 +1,13 @@
+name: colibot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - sqlite
+  - faiss-cpu
+  - pip
+  - pip:
+      - biopython
+      - sentence-transformers
+      - gradio

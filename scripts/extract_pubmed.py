@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import sqlite3
 from Bio import Entrez
 from sentence_transformers import SentenceTransformer

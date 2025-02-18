@@ -6,3 +6,12 @@
 2025-02-17 16:34:08	-	grave_bhaskara	-	f677e84896dfb5d1afa5edc51013a453	ff885725-06fd-4dff-bc79-2dc60059f21a	nextflow run workflows/main.nf -with-conda -resume
 2025-02-17 16:44:17	-	maniac_sinoussi	-	fc06524fea7e1fbfd12f0f7352598025	02a1cb86-2224-4e73-8dd3-7852409b2147	nextflow run workflows/main.nf -with-conda
 2025-02-17 16:46:15	-	suspicious_hodgkin	-	22fbfa3fddca072be985f6924ebe9fce	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda
+2025-02-17 16:47:57	-	lonely_mclean	-	4a84646e6fcf193f319372315c641226	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda -resume
+2025-02-17 16:50:13	-	tender_cray	-	0e79dd73596abd547d3f14f6c77ba6e0	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda -resume
+2025-02-17 17:00:07	-	confident_hilbert	-	af96cae9b0e9bbcbf512ea02a05690c5	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda -resume
+2025-02-17 17:05:00	-	nasty_poincare	-	7e0707c4ef730f796cfa0356ae4ad495	beeb6f2c-0a41-4fbe-8d1f-0dad63a51a26	nextflow run workflows/main.nf -with-conda -resume
+2025-02-18 09:02:25	-	grave_coulomb	-	7e0707c4ef730f796cfa0356ae4ad495	c7f3b7ff-4e76-4a1b-81de-3dbfd59045f8	nextflow run workflows/main.nf
+2025-02-18 09:19:21	-	nasty_tuckerman	-	cc5c1f806fd838350a941252ed0c5a1d	95803ff5-a9fd-4dcd-bf3a-b74020329b65	nextflow run workflows/main.nf
+2025-02-18 09:21:43	-	small_kalman	-	ea5f78a9e285713a189baff088c01e24	86d0ad17-b744-4662-a630-84e447634fa9	nextflow run workflows/main.nf
+2025-02-18 09:36:45	-	zen_gautier	-	1ca81c7fd767eedfed032ea55032f44a	6b284eba-72af-4381-ba58-ba8083f77c0b	nextflow run workflows/main.nf
+2025-02-18 09:39:36	42.6s	loquacious_jepsen	OK	cf377c36d5a03e30b185d92185496267	b2b53156-a034-469c-8b6d-379c763040ea	nextflow run main.nf

@@ -1,0 +1,1 @@
+/home/erick/Nextflow/colibot/scripts/extract_pubmed.py
