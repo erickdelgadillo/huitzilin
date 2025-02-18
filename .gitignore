@@ -172,3 +172,7 @@ cython_debug/
 
 # work directory 
 work/
+.nextflow/
+
+# Results 
+results.txt
