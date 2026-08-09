@@ -23,3 +23,13 @@ class Article:
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
     source: str = "pubmed"
+
+
+@dataclass(frozen=True, slots=True)
+class SearchHit:
+    """Ranked article returned by a Huitzilin retrieval backend."""
+
+    pubmed_id: str
+    title: str
+    score: float
+    source: str
