@@ -176,3 +176,12 @@ work/
 
 # Results 
 results.txt
+
+.venv/
+
+# Huitzilin development
+data/huitzilin.db
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
