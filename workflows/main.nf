@@ -1,13 +1,12 @@
 nextflow.enable.dsl=2
 
-// Define input files
-params.query_file = file("query.txt")
-params.script_extract = file("scripts/extract_pubmed.py")
-params.script_generate = file("scripts/generate_Faiss_embeddings.py")
-params.script_query = file("scripts/query_faiss.py")
+params.query_file = file("${projectDir}/../data/query.txt")
+params.script_extract = file("${projectDir}/../bin/extract_pubmed.py")
+params.script_generate = file("${projectDir}/../bin/generate_Faiss_embeddings.py")
+params.script_query = file("${projectDir}/../bin/query_faiss.py")
 
 process extract_pubmed {
-    conda 'environment.yml'
+    conda "${projectDir}/../environment/environment.yml"
 
     input:
     path(query_file)
@@ -24,7 +23,7 @@ process extract_pubmed {
 }
 
 process generate_faiss {
-    conda 'environment.yml'
+    conda "${projectDir}/../environment/environment.yml"
 
     input:
     path("colibot.db")
@@ -42,7 +41,8 @@ process generate_faiss {
 }
 
 process query_faiss {
-    conda 'environment.yml'
+    publishDir "${projectDir}/../results", mode: 'copy'
+    conda "${projectDir}/../environment/environment.yml"
 
     input:
     path("colibot_faiss.index")
@@ -57,10 +57,11 @@ process query_faiss {
     script:
     """
     echo "🔍 Running FAISS query..."
-    python query_faiss.py query.txt > results.txt
+    python query_faiss.py query.txt
     echo "✅ Query completed. Check 'results.txt'."
     """
 }
+
 
 workflow {
     db_ch = extract_pubmed(params.query_file, params.script_extract)

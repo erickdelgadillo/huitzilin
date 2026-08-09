@@ -45,7 +45,7 @@ def search_articles(query, top_k=12):
 def main():
     results = search_articles(user_query)
 
-    with open("../../../results.txt", "w") as f:
+    with open("results.txt", "w") as f:
         f.write(f"🔍 Results for: {user_query}\n\n")
         for i, res in enumerate(results):
             f.write(f"{i+1}. 📰 {res['title']}\n")

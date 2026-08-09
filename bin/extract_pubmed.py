@@ -1,50 +1,239 @@
+import os
 import sqlite3
+
+import numpy as np
 from Bio import Entrez
 from sentence_transformers import SentenceTransformer
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Configurar Entrez con un correo electrónico válido
-Entrez.email = None
-Entrez.api_key = None
 
-# Function to search articles in PubMed
+# ============================================================
+# NCBI configuration
+# ============================================================
+
+NCBI_EMAIL = os.getenv("NCBI_EMAIL")
+NCBI_API_KEY = os.getenv("NCBI_API_KEY")
+
+if not NCBI_EMAIL:
+    raise RuntimeError(
+        "NCBI_EMAIL is not defined. "
+        "Set it with: export NCBI_EMAIL='your_email@example.com'"
+    )
+
+Entrez.email = NCBI_EMAIL
+
+if NCBI_API_KEY:
+    Entrez.api_key = NCBI_API_KEY
+
+
+# ============================================================
+# Query handling
+# ============================================================
+
+def read_query_file(query_file="query.txt"):
+    """
+    Read topic and question from query.txt.
+
+    Accepted format:
+
+        topic: marine archaea
+        question: What articles discuss amoA?
+
+    Also accepts:
+
+        marine archaea
+        What articles discuss amoA?
+    """
+
+    with open(query_file, "r", encoding="utf-8") as file:
+        lines = [line.strip() for line in file if line.strip()]
+
+    if len(lines) < 2:
+        raise ValueError(
+            "query.txt must contain at least two non-empty lines: "
+            "a topic and a question."
+        )
+
+    topic = lines[0]
+    question = lines[1]
+
+    if topic.lower().startswith("topic:"):
+        topic = topic.split(":", 1)[1].strip()
+
+    if question.lower().startswith("question:"):
+        question = question.split(":", 1)[1].strip()
+
+    return topic, question
+
+
+# ============================================================
+# PubMed search
+# ============================================================
+
 def search_articles(query, max_results=1000):
-    handle = Entrez.esearch(db="pubmed", term=query, retmax=max_results)
-    record = Entrez.read(handle)
-    handle.close()
+    """
+    Search PubMed and return a list of PubMed IDs.
+    """
+
+    handle = Entrez.esearch(
+        db="pubmed",
+        term=query,
+        retmax=max_results
+    )
+
+    try:
+        record = Entrez.read(handle)
+    finally:
+        handle.close()
+
     return record["IdList"]
 
-# Function to fetch article details
+
+# ============================================================
+# PubMed article parsing
+# ============================================================
+
+def format_authors(authors):
+    """
+    Convert PubMed AuthorList into a readable string.
+    """
+
+    author_names = []
+
+    for author in authors:
+
+        if "CollectiveName" in author:
+            author_names.append(str(author["CollectiveName"]))
+            continue
+
+        last_name = str(author.get("LastName", "")).strip()
+        fore_name = str(author.get("ForeName", "")).strip()
+
+        full_name = f"{last_name} {fore_name}".strip()
+
+        if full_name:
+            author_names.append(full_name)
+
+    return ", ".join(author_names) if author_names else "Unknown"
+
+
+def normalize_abstract(abstract):
+    """
+    PubMed abstracts can contain several labelled sections.
+    Convert all possible forms into one single string.
+    """
+
+    if isinstance(abstract, (list, tuple)):
+        return " ".join(str(section) for section in abstract)
+
+    if abstract:
+        return str(abstract)
+
+    return "No abstract available"
+
+
+def extract_doi(pubmed_article):
+    """
+    Extract the DOI specifically from PubMed ArticleIdList.
+    """
+
+    article_ids = (
+        pubmed_article
+        .get("PubmedData", {})
+        .get("ArticleIdList", [])
+    )
+
+    for article_id in article_ids:
+
+        attributes = getattr(article_id, "attributes", {})
+
+        if attributes.get("IdType") == "doi":
+            return str(article_id)
+
+    return "No DOI available"
+
+
 def fetch_article_details(article_ids):
+    """
+    Retrieve metadata and abstracts for PubMed IDs.
+    """
+
     articles = []
+
     for pubmed_id in article_ids:
-        handle = Entrez.efetch(db="pubmed", id=pubmed_id, rettype="xml", retmode="text")
-        record = Entrez.read(handle)["PubmedArticle"]
-        handle.close()
-        
-        title = record[0]["MedlineCitation"]["Article"].get("ArticleTitle", "Unknown")
-        authors = record[0]["MedlineCitation"]["Article"].get("AuthorList", [])
-        author_names = ", ".join([a["LastName"] + " " + a.get("ForeName", "") for a in authors]) if authors else "Unknown"
-        abstract = record[0]["MedlineCitation"]["Article"].get("Abstract", {}).get("AbstractText", "No abstract available")
-        doi = record[0].get("PubmedData", {}).get("ArticleIdList", ["No DOI available"])[0]
-        
-        articles.append({
-            "pubmed_id": pubmed_id,
-            "title": title,
-            "authors": author_names,
-            "abstract": abstract,
-            "doi": doi
-        })
+
+        handle = Entrez.efetch(
+            db="pubmed",
+            id=pubmed_id,
+            rettype="xml",
+            retmode="text"
+        )
+
+        try:
+            records = Entrez.read(handle)["PubmedArticle"]
+        finally:
+            handle.close()
+
+        if not records:
+            print(f"⚠️ No record returned for PMID {pubmed_id}")
+            continue
+
+        pubmed_article = records[0]
+
+        medline = pubmed_article["MedlineCitation"]
+        article_data = medline["Article"]
+
+        title = str(
+            article_data.get(
+                "ArticleTitle",
+                "Unknown"
+            )
+        )
+
+        authors = article_data.get(
+            "AuthorList",
+            []
+        )
+
+        author_names = format_authors(authors)
+
+        abstract_raw = (
+            article_data
+            .get("Abstract", {})
+            .get("AbstractText", [])
+        )
+
+        abstract = normalize_abstract(abstract_raw)
+
+        doi = extract_doi(pubmed_article)
+
+        articles.append(
+            {
+                "pubmed_id": str(pubmed_id),
+                "title": title,
+                "authors": author_names,
+                "abstract": abstract,
+                "doi": doi,
+            }
+        )
+
     return articles
 
-# Function to store articles in SQLite
-def store_in_sqlite(articles):
-    conn = sqlite3.connect("colibot.db")
+
+# ============================================================
+# SQLite storage
+# ============================================================
+
+def store_in_sqlite(articles, database="colibot.db"):
+    """
+    Store retrieved articles in SQLite.
+    """
+
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
-    
-    # Create table if it does not exist
-    cursor.execute('''
+
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pubmed_id TEXT UNIQUE,
@@ -53,68 +242,209 @@ def store_in_sqlite(articles):
             abstract TEXT,
             doi TEXT
         )
-    ''')
-    
+        """
+    )
+
     for article in articles:
-        print(f"Inserting: {article}")
-        cursor.execute('''INSERT OR IGNORE INTO articles (pubmed_id, title, authors, abstract, doi)
-                          VALUES (?, ?, ?, ?, ?)''',
-                       (str(article["pubmed_id"]), 
-                        str(article["title"]), 
-                        str(article["authors"]), 
-                        str(article["abstract"]), 
-                        str(article["doi"])) )
-    
+
+        cursor.execute(
+            """
+            INSERT INTO articles (
+                pubmed_id,
+                title,
+                authors,
+                abstract,
+                doi
+            )
+            VALUES (?, ?, ?, ?, ?)
+
+            ON CONFLICT(pubmed_id) DO UPDATE SET
+                title = excluded.title,
+                authors = excluded.authors,
+                abstract = excluded.abstract,
+                doi = excluded.doi
+            """,
+            (
+                article["pubmed_id"],
+                article["title"],
+                article["authors"],
+                article["abstract"],
+                article["doi"],
+            )
+        )
+
     conn.commit()
     conn.close()
 
-# Main process
+
+# ============================================================
+# Main
+# ============================================================
+
 def main():
-    # Read the query from the 'query.txt' file
-    with open("query.txt", "r") as file:
-        lines = file.readlines()
-        topic = lines[0].strip()  # First line: topic of the search
-        question = lines[1].strip()  # Second line: the specific question
+
+    # --------------------------------------------------------
+    # Read search configuration
+    # --------------------------------------------------------
+
+    topic, question = read_query_file("query.txt")
 
     print(f"📥 Extracting articles based on query: {topic}")
-    
-    # Step 1: Search for articles
-    ids = search_articles(topic, max_results=10)
+    print(f"❓ Semantic question: {question}")
+
+    # --------------------------------------------------------
+    # Search PubMed
+    # --------------------------------------------------------
+
+    ids = search_articles(
+        topic,
+        max_results=10
+    )
+
     print(f"✅ Found {len(ids)} article IDs.")
 
-    # Step 2: Fetch full article details
+    if not ids:
+        print("⚠️ PubMed returned no articles.")
+        return
+
+    # --------------------------------------------------------
+    # Retrieve metadata and abstracts
+    # --------------------------------------------------------
+
     articles = fetch_article_details(ids)
+
     print(f"✅ Retrieved {len(articles)} articles.")
 
-    # Step 3: Use Sentence-Transformers to compute similarity between the query and articles
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    if not articles:
+        print("⚠️ No valid articles were retrieved.")
+        return
 
-    # Step 3.1: Get the embedding for the query (after reading query.txt)
-    query_embedding = model.encode(question)
-    query_embedding = query_embedding.reshape(1, -1)  # Make sure query_embedding is 2D
+    # --------------------------------------------------------
+    # Load semantic embedding model
+    # --------------------------------------------------------
 
-    # Step 3.2: Get the embeddings for the article abstracts
-    article_embeddings = [model.encode(article['abstract']).reshape(1, -1) for article in articles]  # Make sure article_embeddings are 2D
+    print("🧠 Loading sentence-transformer model...")
 
-    # Step 3.3: Calculate cosine similarity between the query and each article
-    similarities = [cosine_similarity(query_embedding, article_embedding)[0][0] for article_embedding in article_embeddings]
+    model = SentenceTransformer(
+        "all-MiniLM-L6-v2"
+    )
 
-    # Step 3.4: Sort articles by similarity score (highest first)
-    sorted_articles = [articles[i] for i in np.argsort(similarities)[::-1]]
+    # --------------------------------------------------------
+    # Embed the scientific question
+    # --------------------------------------------------------
 
-    # Show the most relevant articles
-    print(f"\n🔍 Your question: {question}")
-    print("✅ Search complete. Top 5 relevant articles are:")
+    query_embedding = model.encode(
+        [question],
+        convert_to_numpy=True
+    )
 
-    for article in sorted_articles[:5]:  # Show the top 5 most relevant articles
-        print(f"\nTitle: {article['title']}")
-        print(f"Authors: {article['authors']}")
-        print(f"Abstract: {article['abstract'][:600]}...")
+    # Shape should now be:
+    #
+    # (1, 384)
 
-    # Step 4: Save articles to SQLite
-    store_in_sqlite(sorted_articles)
+    # --------------------------------------------------------
+    # Embed all abstracts IN A SINGLE BATCH
+    # --------------------------------------------------------
+
+    abstract_texts = [
+        article["abstract"]
+        for article in articles
+    ]
+
+    article_embeddings = model.encode(
+        abstract_texts,
+        convert_to_numpy=True,
+        show_progress_bar=True
+    )
+
+    # Shape should now be:
+    #
+    # (number_of_articles, 384)
+    #
+    # e.g.
+    #
+    # (10, 384)
+
+    # --------------------------------------------------------
+    # Semantic similarity
+    # --------------------------------------------------------
+
+    similarities = cosine_similarity(
+        query_embedding,
+        article_embeddings
+    )[0]
+
+    ranked_indices = np.argsort(
+        similarities
+    )[::-1]
+
+    ranked_articles = [
+        (
+            articles[int(index)],
+            float(similarities[index])
+        )
+        for index in ranked_indices
+    ]
+
+    # --------------------------------------------------------
+    # Display results
+    # --------------------------------------------------------
+
+    print()
+    print(f"🔍 Your question: {question}")
+    print()
+    print("✅ Search complete.")
+    print("Top 5 relevant articles:")
+
+    for rank, (article, score) in enumerate(
+        ranked_articles[:5],
+        start=1
+    ):
+
+        print()
+        print("=" * 80)
+
+        print(
+            f"{rank}. {article['title']}"
+        )
+
+        print(
+            f"Similarity: {score:.4f}"
+        )
+
+        print(
+            f"PMID: {article['pubmed_id']}"
+        )
+
+        print(
+            f"DOI: {article['doi']}"
+        )
+
+        print(
+            f"Authors: {article['authors']}"
+        )
+
+        print()
+        print(
+            f"Abstract: {article['abstract'][:600]}..."
+        )
+
+    # --------------------------------------------------------
+    # Save ranked articles
+    # --------------------------------------------------------
+
+    sorted_articles = [
+        article
+        for article, score in ranked_articles
+    ]
+
+    store_in_sqlite(
+        sorted_articles
+    )
+
+    print()
     print("✅ Articles successfully saved to colibot.db.")
+
 
 if __name__ == "__main__":
     main()
-
