@@ -1,5 +1,10 @@
 # Huitzilin
 
+![Version](https://img.shields.io/badge/version-v0.1.0-blue)
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
+![PubMed](https://img.shields.io/badge/PubMed-NCBI-326599)
+![Status](https://img.shields.io/badge/status-active%20development-yellow)
+
 **Hybrid scientific literature retrieval for PubMed.**
 
 Huitzilin is a Python project for discovering and ranking scientific literature using a combination of lexical and semantic information retrieval.
