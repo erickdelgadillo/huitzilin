@@ -4,6 +4,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
 ![PubMed](https://img.shields.io/badge/PubMed-NCBI-326599)
 ![Status](https://img.shields.io/badge/status-active%20development-yellow)
+[![CI](https://github.com/erickdelgadillo/huitzilin/actions/workflows/ci.yml/badge.svg)](https://github.com/erickdelgadillo/huitzilin/actions/workflows/ci.yml)
 
 **Hybrid scientific literature retrieval for PubMed.**
 
@@ -307,11 +308,14 @@ RRF rewards papers that rank highly across multiple independent retrieval system
 
 ## Testing
 
-Run the complete test suite with:
+Install development requirements and run the offline test suite with:
 
 ```bash
-pytest
+python -m pip install -e '.[dev]'
+python -m pytest
 ```
+
+GitHub Actions runs these tests on Python 3.10, 3.11 and 3.12. The suite uses a fake embedding encoder: it does not require NCBI credentials or model downloads. See [development and CI notes](docs/DEVELOPMENT.md).
 
 The current tests cover:
 
@@ -351,7 +355,7 @@ tests/
 └── test_vector_index.py
 ```
 
-Some modules are currently placeholders for functionality planned in later development stages.
+Some modules are currently placeholders for functionality planned in later development stages. The command-line interface is not implemented yet; no `huitzilin` console command is currently provided.
 
 ---
 

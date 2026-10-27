@@ -2,6 +2,7 @@ import re
 import sqlite3
 from pathlib import Path
 
+from .database import initialize_database
 from .models import SearchHit
 
 
@@ -99,6 +100,7 @@ def initialize_lexical_index(database: str | Path) -> None:
     """Create the FTS5 index and synchronize existing articles."""
 
     database = Path(database)
+    initialize_database(database)
 
     with sqlite3.connect(database) as connection:
         existed = connection.execute(
