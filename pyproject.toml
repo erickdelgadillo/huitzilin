@@ -20,6 +20,8 @@ semantic = [
 
 dev = [
     "pytest>=8",
+    "numpy>=1.26",
+    "faiss-cpu>=1.14,<2",
 ]
 
 [tool.setuptools.packages.find]
