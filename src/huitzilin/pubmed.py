@@ -34,6 +34,11 @@ class PubMedClient:
     ) -> list[str]:
         """Search PubMed and return matching PMIDs."""
 
+        if not query.strip():
+            raise ValueError("Search query cannot be empty.")
+        if max_results <= 0:
+            raise ValueError("max_results must be greater than zero.")
+
         handle = Entrez.esearch(
             db="pubmed",
             term=query,
@@ -53,6 +58,9 @@ class PubMedClient:
         batch_size: int = 200,
     ) -> list[Article]:
         """Retrieve PubMed records in batches."""
+
+        if batch_size <= 0:
+            raise ValueError("batch_size must be greater than zero.")
 
         articles: list[Article] = []
 
