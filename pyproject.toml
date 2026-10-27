@@ -27,9 +27,6 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[project.scripts]
-huitzilin = "huitzilin.cli:app"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
