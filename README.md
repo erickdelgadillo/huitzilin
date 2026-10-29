@@ -333,26 +333,26 @@ The current tests cover:
 ## Project structure
 
 ```text
+
 src/huitzilin/
 ├── __init__.py
-├── cli.py
 ├── database.py
 ├── embeddings.py
-├── export.py
 ├── lexical.py
 ├── models.py
 ├── pubmed.py
-├── query_builder.py
-├── reranker.py
 ├── retrieval.py
 └── vector_index.py
 
 tests/
 ├── test_database.py
+├── test_edge_cases.py
 ├── test_embeddings.py
 ├── test_lexical.py
+├── test_pubmed.py
 ├── test_retrieval.py
 └── test_vector_index.py
+
 ```
 
 Some modules are currently placeholders for functionality planned in later development stages. The command-line interface is not implemented yet; no `huitzilin` console command is currently provided.
