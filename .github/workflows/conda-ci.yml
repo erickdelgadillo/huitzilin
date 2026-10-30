@@ -1,0 +1,42 @@
+name: Conda CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conda-test:
+    name: Conda environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: huitzilin
+          environment-file: environment.yml
+          auto-activate-base: false
+
+      - name: Check dependencies
+        shell: bash -el {0}
+        run: |
+          python -m pip check
+
+      - name: Verify scientific libraries
+        shell: bash -el {0}
+        run: |
+          python -c "import numpy, scipy, sklearn, Bio, faiss, torch, regex, sentence_transformers"
+          python -c "import huitzilin"
+
+      - name: Run tests
+        shell: bash -el {0}
+        run: |
+          python -m pytest
