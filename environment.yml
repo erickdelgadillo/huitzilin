@@ -1,0 +1,32 @@
+
+name: huitzilin
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  # Python
+  - python=3.12
+  - pip
+
+  # Scientific computing
+  - numpy>=1.26
+  - scipy>=1.13
+  - scikit-learn
+
+  # Literature retrieval
+  - biopython>=1.87
+  - faiss-cpu>=1.14
+
+  # Semantic models
+  - pytorch
+  - sentence-transformers>=5.6,<6
+  - regex
+
+  # Testing
+  - pytest>=8
+
+  # Install Huitzilin in editable mode
+  - pip:
+      - -e .

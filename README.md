@@ -190,6 +190,18 @@ For semantic retrieval with Sentence Transformers and FAISS:
 python -m pip install -e '.[dev,semantic]'
 ```
 
+### Conda installation (recommended)
+
+For a complete scientific environment with FAISS, PyTorch and
+Sentence Transformers, use Miniforge:
+
+```bash
+conda env create -f environment.yml
+conda activate huitzilin
+python -m pip check
+python -m pytest
+
+
 ---
 
 ## NCBI configuration
